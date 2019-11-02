@@ -14,9 +14,8 @@ module.exports = {
       email: {
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true,
       },
-      bithday: {
+      birthday: {
         type: Sequelize.DATE,
         allowNull: false,
       },
