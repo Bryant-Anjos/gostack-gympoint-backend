@@ -9,7 +9,6 @@ class Student extends Model {
         birthday: Sequelize.DATE,
         height: Sequelize.DECIMAL(3, 2),
         weight: Sequelize.DECIMAL(5, 2),
-        user_id: Sequelize.INTEGER,
       },
       {
         sequelize,
@@ -17,6 +16,10 @@ class Student extends Model {
     )
 
     return this
+  }
+
+  static associate(models) {
+    this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' })
   }
 }
 
