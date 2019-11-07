@@ -7,6 +7,9 @@ import Student from '../models/Student'
 import Plan from '../models/Plan'
 import User from '../models/User'
 
+import EnrollmentMail from '../jobs/EnrollmentMail'
+import Queue from '../../lib/Queue'
+
 class EnrollmentController {
   async store(req, res) {
     const schema = Yup.object().shape({
@@ -35,29 +38,29 @@ class EnrollmentController {
     /**
      * Check if student exists
      */
-    const studentExists = await Student.findOne({
+    const student = await Student.findOne({
       where: { id: student_id, user_id: req.userId },
     })
 
-    if (!studentExists) {
+    if (!student) {
       return res.status(400).json({ error: "Student doesn't exists." })
     }
 
     /**
      * Check if plan exists
      */
-    const planExists = await Plan.findOne({
+    const plan = await Plan.findOne({
       where: { id: plan_id, user_id: req.userId },
     })
 
-    if (!planExists) {
+    if (!plan) {
       return res.status(400).json({ error: "Plan doesn't exists." })
     }
 
     /**
      * Generate enrollment's end date
      */
-    const { duration, price: monthlyPrice } = planExists
+    const { duration, price: monthlyPrice } = plan
 
     const end_date = addMonths(endOfDay(parseISO(start_date)), duration)
 
@@ -80,6 +83,14 @@ class EnrollmentController {
     await Enrollment.create({
       student_id,
       plan_id,
+      start_date,
+      end_date,
+      price,
+    })
+
+    await Queue.add(EnrollmentMail.key, {
+      student,
+      plan,
       start_date,
       end_date,
       price,
@@ -159,6 +170,90 @@ class EnrollmentController {
     if (!enrollment) {
       return res.status(400).json({ error: "Enrollment doesn't exists." })
     }
+
+    return res.json(enrollment)
+  }
+
+  async update(req, res) {
+    const schema = Yup.object().shape({
+      plan_id: Yup.number().integer(),
+      start_date: Yup.date(),
+    })
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validation fails.' })
+    }
+
+    const enrollment = await Enrollment.findByPk(req.params.id, {
+      include: [{ model: Student, as: 'student' }],
+    })
+
+    if (!enrollment) {
+      return res.status(400).json({ error: "Enrollment doesn't exists." })
+    }
+
+    if (enrollment.student.user_id !== req.userId) {
+      return res
+        .status(401)
+        .json({ error: "You don't have permission to do this." })
+    }
+
+    const {
+      plan_id = enrollment.plan_id,
+      start_date = enrollment.start_date,
+    } = req.body
+
+    const plan = await Plan.findOne({
+      where: { id: plan_id, user_id: req.userId },
+    })
+
+    if (!plan) {
+      return res.status(400).json({ error: "Plan doesn't exists." })
+    }
+
+    if (start_date !== enrollment.start_date) {
+      if (isBefore(parseISO(start_date), new Date())) {
+        return res.status(400).json({ error: 'Past dates are not permitted.' })
+      }
+    }
+
+    const { duration, price: monthlyPrice } = plan
+
+    const end_date = addMonths(endOfDay(parseISO(start_date)), duration)
+
+    const price = monthlyPrice * duration
+
+    await enrollment.update({
+      plan_id,
+      start_date,
+      end_date,
+      price,
+    })
+
+    return res.json({
+      plan_id,
+      start_date,
+      end_date,
+      price,
+    })
+  }
+
+  async delete(req, res) {
+    const enrollment = await Enrollment.findByPk(req.params.id, {
+      include: [{ model: Student, as: 'student' }],
+    })
+
+    if (!enrollment) {
+      return res.status(400).json({ error: "Enrollment doesn't exists." })
+    }
+
+    if (enrollment.student.user_id !== req.userId) {
+      return res
+        .status(401)
+        .json({ error: "You don't have permission to do this." })
+    }
+
+    await enrollment.destroy()
 
     return res.json(enrollment)
   }

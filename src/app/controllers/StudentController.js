@@ -100,6 +100,24 @@ class StudentController {
       weight,
     })
   }
+
+  async delete(req, res) {
+    const student = await Student.findByPk(req.params.id)
+
+    if (!student) {
+      return res.status(400).json({ error: "Student doesn't exists." })
+    }
+
+    if (student.user_id !== req.userId) {
+      return res
+        .status(401)
+        .json({ error: "You don't have permission to do this." })
+    }
+
+    await student.destroy()
+
+    return res.json(student)
+  }
 }
 
 export default new StudentController()

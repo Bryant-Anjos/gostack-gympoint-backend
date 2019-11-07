@@ -92,6 +92,10 @@ class PlanController {
   async delete(req, res) {
     const plan = await Plan.findByPk(req.params.id)
 
+    if (!plan) {
+      return res.status(400).json({ error: "Plan doesn't exists." })
+    }
+
     if (plan.user_id !== req.userId) {
       return res.status(401).json({
         error: "You don't have permission to cancel this plan.",
