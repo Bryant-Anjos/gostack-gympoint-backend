@@ -8,7 +8,15 @@ class StudentController {
     const students = await Student.findAll({
       where: { user_id: req.userId },
       order: ['name'],
-      attributes: ['id', 'name', 'email', 'birthday', 'height', 'weight'],
+      attributes: [
+        'id',
+        'name',
+        'email',
+        'birthday',
+        'age',
+        'height',
+        'weight',
+      ],
       limit: 10,
       offset: (page - 1) * 20,
     })
