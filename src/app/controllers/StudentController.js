@@ -6,7 +6,7 @@ class StudentController {
     const { page = 1 } = req.query
 
     const students = await Student.findAll({
-      where: { user_id: req.userId },
+      where: { user_id: req.userId, active: true },
       order: ['name'],
       attributes: [
         'id',
@@ -22,6 +22,27 @@ class StudentController {
     })
 
     return res.json(students)
+  }
+
+  async show(req, res) {
+    const student = await Student.findByPk(req.params.id, {
+      attributes: [
+        'id',
+        'name',
+        'email',
+        'birthday',
+        'age',
+        'height',
+        'weight',
+        'active',
+      ],
+    })
+
+    if (!student || !student.active) {
+      return res.status(400).json({ error: "Student doesn't exists." })
+    }
+
+    return res.json(student)
   }
 
   async store(req, res) {
@@ -51,7 +72,15 @@ class StudentController {
       return res.status(400).json({ error: 'Student already exists.' })
     }
 
-    const { id, name, email, birthday, height, weight } = await Student.create({
+    const {
+      id,
+      name,
+      email,
+      birthday,
+      height,
+      weight,
+      age,
+    } = await Student.create({
       ...req.body,
       user_id: req.userId,
     })
@@ -63,6 +92,7 @@ class StudentController {
       birthday,
       height,
       weight,
+      age,
     })
   }
 
@@ -96,16 +126,26 @@ class StudentController {
       }
     }
 
-    const { id, name, email, height, weight } = await student.update(req.body, {
-      fields: ['name', 'email', 'height', 'weight'],
+    const {
+      id,
+      name,
+      email,
+      birthday,
+      height,
+      weight,
+      age,
+    } = await student.update(req.body, {
+      fields: ['name', 'email', 'birthday', 'height', 'weight', 'age'],
     })
 
     return res.json({
       id,
       name,
       email,
+      birthday,
       height,
       weight,
+      age,
     })
   }
 
@@ -122,7 +162,7 @@ class StudentController {
         .json({ error: "You don't have permission to do this." })
     }
 
-    await student.destroy()
+    await student.update({ active: false })
 
     return res.json(student)
   }

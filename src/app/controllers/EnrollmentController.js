@@ -109,11 +109,11 @@ class EnrollmentController {
     const { page = 1 } = req.query
 
     const enrollments = await Enrollment.findAll({
-      where: { student_id: { [Op.ne]: null } },
+      where: { student_id: { [Op.ne]: null }, active: true },
       order: ['start_date'],
       limit: 10,
       offset: (page - 1) * 10,
-      attributes: ['id', 'start_date', 'end_date', 'price'],
+      attributes: ['id', 'start_date', 'end_date', 'price', 'enable'],
       include: [
         {
           where: { user_id: { [Op.ne]: null } },
@@ -142,8 +142,8 @@ class EnrollmentController {
 
   async show(req, res) {
     const enrollment = await Enrollment.findByPk(req.params.id, {
-      where: { student_id: { [Op.ne]: null } },
-      attributes: ['id', 'start_date', 'end_date', 'price'],
+      where: { student_id: { [Op.ne]: null }, active: true },
+      attributes: ['id', 'start_date', 'end_date', 'price', 'enable'],
       include: [
         {
           where: { user_id: { [Op.ne]: null } },
@@ -253,7 +253,7 @@ class EnrollmentController {
         .json({ error: "You don't have permission to do this." })
     }
 
-    await enrollment.destroy()
+    await enrollment.update({ active: false })
 
     return res.json(enrollment)
   }

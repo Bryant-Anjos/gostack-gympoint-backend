@@ -8,6 +8,7 @@ class Plan extends Model {
         duration: Sequelize.INTEGER,
         price: Sequelize.DECIMAL(9, 2),
         user_id: Sequelize.INTEGER,
+        active: Sequelize.BOOLEAN,
       },
       {
         sequelize,

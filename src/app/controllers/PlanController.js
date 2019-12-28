@@ -4,12 +4,24 @@ import Plan from '../models/Plan'
 class PlanController {
   async index(req, res) {
     const plans = await Plan.findAll({
-      where: { user_id: req.userId },
+      where: { user_id: req.userId, active: true },
       order: ['duration'],
       attributes: ['id', 'title', 'duration'],
     })
 
     return res.json(plans)
+  }
+
+  async show(req, res) {
+    const plan = await Plan.findByPk(req.params.id, {
+      attributes: ['id', 'title', 'duration', 'active'],
+    })
+
+    if (!plan || !plan.active) {
+      return res.status(400).json({ error: "Plan doesn't exists." })
+    }
+
+    return res.json(plan)
   }
 
   async store(req, res) {
@@ -102,7 +114,7 @@ class PlanController {
       })
     }
 
-    await plan.destroy()
+    await plan.update({ active: false })
 
     return res.json(plan)
   }

@@ -10,6 +10,7 @@ class Student extends Model {
         birthday: Sequelize.DATE,
         height: Sequelize.DECIMAL(3, 2),
         weight: Sequelize.DECIMAL(5, 2),
+        active: Sequelize.BOOLEAN,
         age: {
           type: Sequelize.VIRTUAL,
           get() {
