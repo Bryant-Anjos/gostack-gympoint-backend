@@ -80,7 +80,7 @@ class EnrollmentController {
      */
     const price = monthlyPrice * duration
 
-    await Enrollment.create({
+    const enrollment = await Enrollment.create({
       student_id,
       plan_id,
       start_date,
@@ -96,12 +96,40 @@ class EnrollmentController {
       price,
     })
 
+    // return res.json({
+    //   student_id,
+    //   plan_id,
+    //   start_date,
+    //   end_date,
+    //   price,
+    // })
+
+    const { id, enable } = enrollment
+    const { title } = plan
+    const { name, birthday, age, heigth, weigth } = student
+
     return res.json({
-      student_id,
+      id,
       plan_id,
+      student_id,
       start_date,
       end_date,
       price,
+      enable,
+      plan: {
+        id: plan_id,
+        price: monthlyPrice,
+        duration,
+        title,
+      },
+      student: {
+        id: student_id,
+        name,
+        birthday,
+        age,
+        heigth,
+        weigth,
+      },
     })
   }
 
@@ -149,7 +177,7 @@ class EnrollmentController {
           where: { user_id: { [Op.ne]: null } },
           model: Student,
           as: 'student',
-          attributes: ['id', 'name', 'birthday', 'height'],
+          attributes: ['id', 'name', 'birthday', 'height', 'weight'],
           include: [
             {
               where: { id: req.userId },
@@ -162,7 +190,7 @@ class EnrollmentController {
         {
           model: Plan,
           as: 'plan',
-          attributes: ['id', 'title'],
+          attributes: ['id', 'title', 'duration', 'price'],
         },
       ],
     })
@@ -184,7 +212,9 @@ class EnrollmentController {
       return res.status(400).json({ error: 'Validation fails.' })
     }
 
-    const enrollment = await Enrollment.findByPk(req.params.id, {
+    const { id } = req.params
+
+    const enrollment = await Enrollment.findByPk(id, {
       include: [{ model: Student, as: 'student' }],
     })
 
@@ -230,11 +260,20 @@ class EnrollmentController {
       price,
     })
 
+    const { title } = plan
+
     return res.json({
+      id,
       plan_id,
       start_date,
       end_date,
       price,
+      plan: {
+        id: plan_id,
+        price: monthlyPrice,
+        duration,
+        title,
+      },
     })
   }
 

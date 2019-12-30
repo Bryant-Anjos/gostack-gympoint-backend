@@ -6,7 +6,7 @@ class PlanController {
     const plans = await Plan.findAll({
       where: { user_id: req.userId, active: true },
       order: ['duration'],
-      attributes: ['id', 'title', 'duration'],
+      attributes: ['id', 'title', 'duration', 'price'],
     })
 
     return res.json(plans)
@@ -14,7 +14,7 @@ class PlanController {
 
   async show(req, res) {
     const plan = await Plan.findByPk(req.params.id, {
-      attributes: ['id', 'title', 'duration', 'active'],
+      attributes: ['id', 'title', 'duration', 'price', 'active'],
     })
 
     if (!plan || !plan.active) {
@@ -49,7 +49,7 @@ class PlanController {
       return res.status(400).json({ error: 'Plan already exists.' })
     }
 
-    const { id, title, duration, user_id } = await Plan.create({
+    const { id, title, duration, price, user_id } = await Plan.create({
       ...req.body,
       user_id: req.userId,
     })
@@ -58,6 +58,7 @@ class PlanController {
       id,
       title,
       duration,
+      price,
       user_id,
     })
   }

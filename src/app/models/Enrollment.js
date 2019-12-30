@@ -1,4 +1,5 @@
-import Sequelize, { Model, isAfter, isBefore } from 'sequelize'
+import Sequelize, { Model } from 'sequelize'
+import { isAfter, isBefore } from 'date-fns'
 
 class Enrollment extends Model {
   static init(sequelize) {
