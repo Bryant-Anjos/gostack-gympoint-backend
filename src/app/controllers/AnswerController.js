@@ -11,7 +11,7 @@ class AnswerController {
   async index(req, res) {
     const helpOrders = await HelpOrder.findAll({
       where: { answer: null, student_id: { [Op.ne]: null } },
-      attributes: ['id', 'question', 'created_at'],
+      attributes: ['id', 'question', 'created_at', 'answer', 'answer_at'],
       include: [
         {
           model: Student,
