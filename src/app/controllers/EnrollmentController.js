@@ -68,7 +68,7 @@ class EnrollmentController {
      * Check if enrollment exists
      */
     const enrollmentExists = await Enrollment.findOne({
-      where: { student_id, end_date: { [Op.gt]: start_date } },
+      where: { student_id, end_date: { [Op.gt]: start_date }, active: true },
     })
 
     if (enrollmentExists) {
