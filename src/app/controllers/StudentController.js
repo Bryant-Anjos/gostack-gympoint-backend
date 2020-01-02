@@ -24,7 +24,7 @@ class StudentController {
         'weight',
       ],
       limit: 10,
-      offset: (page - 1) * 20,
+      offset: (page - 1) * 10,
     })
 
     return res.json(students)

@@ -11,6 +11,7 @@ import PlanController from './app/controllers/PlanController'
 import SessionController from './app/controllers/SessionController'
 import StudentController from './app/controllers/StudentController'
 import UserController from './app/controllers/UserController'
+import StudentSessionController from './app/controllers/StudentSessionController'
 
 import authMiddleware from './app/middleware/auth'
 
@@ -20,11 +21,7 @@ const upload = multer(multerConfig)
 routes.post('/users', UserController.store)
 routes.post('/sessions', SessionController.store)
 
-routes.get('/students/:id/checkins', CheckinController.index)
-routes.post('/students/:id/checkins', CheckinController.store)
-
-routes.get('/students/:id/help-orders', QuestionController.index)
-routes.post('/students/:id/help-orders', QuestionController.store)
+routes.post('/students/:id/sessions', StudentSessionController.store)
 
 routes.use(authMiddleware)
 
@@ -52,5 +49,11 @@ routes.delete('/enrollments/:id', EnrollmentController.delete)
 
 routes.get('/help-orders', AnswerController.index)
 routes.put('/help-orders/:id/answer', AnswerController.update)
+
+routes.get('/checkins', CheckinController.index)
+routes.post('/checkins', CheckinController.store)
+
+routes.get('/questions', QuestionController.index)
+routes.post('/questions', QuestionController.store)
 
 export default routes

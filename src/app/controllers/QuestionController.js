@@ -13,31 +13,26 @@ class QuestionController {
       return res.status(400).json({ error: 'Validation fails.' })
     }
 
-    const { id: student_id } = req.params
-
-    const studentExists = await Student.findByPk(student_id)
+    const studentExists = await Student.findByPk(req.userId)
 
     if (!studentExists) {
       return res.status(400).json({ error: "Student doesn't exists." })
     }
 
-    const { id, question } = await HelpOrder.create({
-      student_id,
+    const helpOrder = await HelpOrder.create({
+      student_id: req.userId,
       question: req.body.question,
     })
 
-    return res.json({
-      id,
-      student_id,
-      question,
-    })
+    return res.json(helpOrder)
   }
 
   async index(req, res) {
     const { page = 1 } = req.query
 
     const helpOrders = await HelpOrder.findAll({
-      where: { student_id: req.params.id },
+      where: { student_id: req.userId },
+      order: [['id', 'DESC']],
       limit: 20,
       offset: (page - 1) * 20,
     })

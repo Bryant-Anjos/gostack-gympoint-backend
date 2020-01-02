@@ -4,12 +4,11 @@ import Checkin from '../models/Checkin'
 
 class CheckinController {
   async store(req, res) {
-    const { id: student_id } = req.params
     const today = new Date()
 
     const checkinExists = await Checkin.findOne({
       where: {
-        student_id,
+        student_id: req.userId,
         created_at: { [Op.between]: [startOfDay(today), endOfDay(today)] },
       },
     })
@@ -28,7 +27,10 @@ class CheckinController {
       return res.status(401).json({ error: 'Maximum allowed checkins reached' })
     }
 
-    const checkin = await Checkin.create({ student_id })
+    const counter =
+      (await Checkin.count({ where: { student_id: req.userId } })) + 1
+
+    const checkin = await Checkin.create({ student_id: req.userId, counter })
 
     return res.json(checkin)
   }
@@ -37,8 +39,9 @@ class CheckinController {
     const { page = 1 } = req.query
 
     const checkins = await Checkin.findAll({
-      where: { student_id: req.params.id },
-      attributes: ['id', 'created_at'],
+      where: { student_id: req.userId },
+      attributes: ['id', 'counter', 'created_at'],
+      order: [['counter', 'DESC']],
       limit: 20,
       offset: (page - 1) * 20,
     })

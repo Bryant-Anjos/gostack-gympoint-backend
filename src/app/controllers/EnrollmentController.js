@@ -96,14 +96,6 @@ class EnrollmentController {
       price,
     })
 
-    // return res.json({
-    //   student_id,
-    //   plan_id,
-    //   start_date,
-    //   end_date,
-    //   price,
-    // })
-
     const { id, enable } = enrollment
     const { title } = plan
     const { name, birthday, age, heigth, weigth } = student

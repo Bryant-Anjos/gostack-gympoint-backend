@@ -9,6 +9,8 @@ import Queue from '../../lib/Queue'
 
 class AnswerController {
   async index(req, res) {
+    const { page = 1 } = req.query
+
     const helpOrders = await HelpOrder.findAll({
       where: { answer: null, student_id: { [Op.ne]: null } },
       attributes: ['id', 'question', 'created_at', 'answer', 'answer_at'],
@@ -20,6 +22,8 @@ class AnswerController {
           attributes: ['id', 'name'],
         },
       ],
+      limit: 10,
+      offset: (page - 1) * 10,
     })
 
     return res.json(helpOrders)
