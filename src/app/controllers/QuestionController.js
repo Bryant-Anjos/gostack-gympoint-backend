@@ -24,6 +24,24 @@ class QuestionController {
       question: req.body.question,
     })
 
+    const question = await HelpOrder.findByPk(helpOrder.id, {
+      attributes: ['id', 'question', 'answer', 'answer_at', 'created_at'],
+      include: [
+        {
+          model: Student,
+          as: 'student',
+          attributes: ['name', 'email'],
+        },
+      ],
+    })
+
+    const { user_id } = studentExists
+    const instructorSocket = req.connectedInstructors[user_id]
+
+    if (instructorSocket) {
+      req.io.to(instructorSocket).emit('question', question)
+    }
+
     return res.json(helpOrder)
   }
 

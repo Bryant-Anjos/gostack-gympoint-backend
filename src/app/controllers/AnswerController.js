@@ -39,7 +39,14 @@ class AnswerController {
     }
 
     const helpOrder = await HelpOrder.findByPk(req.params.id, {
-      attributes: ['id', 'question', 'answer', 'answer_at'],
+      attributes: [
+        'id',
+        'question',
+        'answer',
+        'answer_at',
+        'student_id',
+        'created_at',
+      ],
       where: { student_id: { [Op.ne]: null } },
       include: [
         {
@@ -69,6 +76,13 @@ class AnswerController {
     await Queue.add(AnswerMail.key, {
       helpOrder,
     })
+
+    const { student_id } = helpOrder
+    const studentSocket = req.connectedStudents[student_id]
+
+    if (studentSocket) {
+      req.io.to(studentSocket).emit('question', helpOrder)
+    }
 
     return res.json(helpOrder)
   }
